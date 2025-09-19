@@ -2,103 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Principal Dashboard – Sample Pie Charts</title>
+  <title>Principal Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      color: #004d80;
-    }
-    .charts-wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 25px;
-    }
-    .chart-box {
-      background: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      width: 360px;
-      text-align: center;
-    }
-    canvas {
-      max-width: 100%;
-    }
+    body { font-family: Arial, sans-serif; background:#f7f7f7; margin:0; }
+    header { background:#005baa; color:white; padding:15px; text-align:center; font-size:1.4rem; }
+    .dept-block { background:#fff; margin:25px auto; padding:20px; max-width:900px;
+                  border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,.1);}
+    h2 { margin-top:0; color:#005baa; }
+    .row { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .info { flex:1 1 45%; }
+    table { width:100%; border-collapse:collapse; margin-top:10px;}
+    th,td { padding:6px 8px; border:1px solid #ddd; text-align:center;}
+    th { background:#005baa; color:#fff; }
+    canvas { width:350px !important; height:350px !important; }
   </style>
 </head>
 <body>
-  <h1>Principal Dashboard – Absentees (Sample)</h1>
-  <div class="charts-wrapper" id="chartsContainer"></div>
+<header>Principal Attendance Dashboard</header>
+<div id="content"></div>
 
-  <script>
-    // ---- Dummy data (replace later with data from Apps Script) ----
-    const sampleData = {
-      CSM: { years: {1:12, 2:8, 3:6, 4:4}, M:15, F:15 },
-      ECE: { years: {1:5, 2:7, 3:10,4:2}, M:12, F:12 },
-      CSE : { years: {1:2, 2:3, 3:1, 4:0}, M:3, F:3 },
-      HS:{ years: {1:4, 2:6, 3:3, 4:1}, M:10, F:4 }
-    };
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUN40tnlFVsFurAujT7hJ_64eza_KjCHgDMdHGIvNZy4z7pJG4V5sg_kUGgcr77dQ/exec";
 
-    const colorsYear = ['#42a5f5','#66bb6a','#ffee58','#ef5350'];
-    const colorsGender = ['#337ab7', '#d9534f'];
+document.addEventListener("DOMContentLoaded", loadDashboard);
 
-    const chartsContainer = document.getElementById('chartsContainer');
+async function loadDashboard(){
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=getPrincipalSummary`);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message);
 
-    for (const dept in sampleData) {
-      const info = sampleData[dept];
+    const data = json.data;
+    const container = document.getElementById('content');
+    container.innerHTML = '';
 
-      // Box for Year-wise chart
-      const box1 = document.createElement('div');
-      box1.className = 'chart-box';
-      box1.innerHTML = `<h3>${dept} - Year-wise Absentees</h3>
-                        <canvas id="year-${dept}"></canvas>`;
-      chartsContainer.appendChild(box1);
+    Object.keys(data).forEach(dept=>{
+      const deptData = data[dept];
+      const block = document.createElement('div');
+      block.className = 'dept-block';
+      block.innerHTML = `<h2>${dept}</h2>`;
 
-      new Chart(document.getElementById(`year-${dept}`), {
-        type: 'pie',
-        data: {
-          labels: ['1st Yr','2nd Yr','3rd Yr','4th Yr'],
-          datasets: [{
-            data: [
-              info.years[1]||0,
-              info.years[2]||0,
-              info.years[3]||0,
-              info.years[4]||0
-            ],
-            backgroundColor: colorsYear
-          }]
-        },
-        options: { plugins:{ legend:{ position:'top'} } }
+      // prepare arrays for chart
+      const labels=[], totalArr=[], presentArr=[], percArr=[];
+      Object.keys(deptData).forEach(yr=>{
+        const t=deptData[yr].total;
+        const p=deptData[yr].present;
+        labels.push(yr);
+        totalArr.push(t);
+        presentArr.push(p);
+        percArr.push(t? (p/t*100).toFixed(1):0);
       });
 
-      // Box for Gender-wise chart
-      const box2 = document.createElement('div');
-      box2.className = 'chart-box';
-      box2.innerHTML = `<h3>${dept} - Gender Absentees</h3>
-                        <canvas id="gender-${dept}"></canvas>`;
-      chartsContainer.appendChild(box2);
+      const row=document.createElement('div');
+      row.className='row';
 
-      new Chart(document.getElementById(`gender-${dept}`), {
-        type: 'pie',
-        data: {
-          labels: ['Boys','Girls'],
+      // ---- left: table with totals & present ----
+      const info=document.createElement('div');
+      info.className='info';
+      let table=`<table><thead><tr><th>Year</th><th>Total</th><th>Present</th></tr></thead><tbody>`;
+      labels.forEach((yr,i)=>{
+        table+=`<tr><td>${yr}</td><td>${totalArr[i]}</td><td>${presentArr[i]}</td></tr>`;
+      });
+      table+='</tbody></table>';
+      info.innerHTML=table;
+
+      // ---- right: pie chart ----
+      const canvas=document.createElement('canvas');
+      const chartWrap=document.createElement('div');
+      chartWrap.appendChild(canvas);
+
+      row.appendChild(info);
+      row.appendChild(chartWrap);
+      block.appendChild(row);
+      container.appendChild(block);
+
+      new Chart(canvas,{
+        type:'pie',
+        data:{
+          labels: labels.map((l,i)=>`${l} – ${percArr[i]}%`),
           datasets:[{
-            data:[info.M||0, info.F||0],
-            backgroundColor: colorsGender
+            data: percArr,
+            backgroundColor:['#42a5f5','#66bb6a','#ffa726','#ef5350','#ab47bc','#29b6f6']
           }]
         },
-        options:{ plugins:{ legend:{ position:'top'} } }
+        options:{
+          plugins:{
+            legend:{ position:'bottom' },
+            tooltip:{enabled:false}
+          }
+        }
       });
-    }
-  </script>
+    });
+  }catch(err){
+    document.getElementById('content').innerHTML=`<p style="color:red;text-align:center">${err.message}</p>`;
+  }
+}
+</script>
 </body>
 </html>
