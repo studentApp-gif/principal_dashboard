@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Principal Dashboard – Sample Pie Charts</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #004d80;
+    }
+    .charts-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+    }
+    .chart-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 360px;
+      text-align: center;
+    }
+    canvas {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Principal Dashboard – Absentees (Sample)</h1>
+  <div class="charts-wrapper" id="chartsContainer"></div>
+
+  <script>
+    // ---- Dummy data (replace later with data from Apps Script) ----
+    const sampleData = {
+      CSM: { years: {1:12, 2:8, 3:6, 4:4}, M:15, F:15 },
+      ECE: { years: {1:5, 2:7, 3:10,4:2}, M:12, F:12 },
+      CSE : { years: {1:2, 2:3, 3:1, 4:0}, M:3, F:3 },
+      HS:{ years: {1:4, 2:6, 3:3, 4:1}, M:10, F:4 }
+    };
+
+    const colorsYear = ['#42a5f5','#66bb6a','#ffee58','#ef5350'];
+    const colorsGender = ['#337ab7', '#d9534f'];
+
+    const chartsContainer = document.getElementById('chartsContainer');
+
+    for (const dept in sampleData) {
+      const info = sampleData[dept];
+
+      // Box for Year-wise chart
+      const box1 = document.createElement('div');
+      box1.className = 'chart-box';
+      box1.innerHTML = `<h3>${dept} - Year-wise Absentees</h3>
+                        <canvas id="year-${dept}"></canvas>`;
+      chartsContainer.appendChild(box1);
+
+      new Chart(document.getElementById(`year-${dept}`), {
+        type: 'pie',
+        data: {
+          labels: ['1st Yr','2nd Yr','3rd Yr','4th Yr'],
+          datasets: [{
+            data: [
+              info.years[1]||0,
+              info.years[2]||0,
+              info.years[3]||0,
+              info.years[4]||0
+            ],
+            backgroundColor: colorsYear
+          }]
+        },
+        options: { plugins:{ legend:{ position:'top'} } }
+      });
+
+      // Box for Gender-wise chart
+      const box2 = document.createElement('div');
+      box2.className = 'chart-box';
+      box2.innerHTML = `<h3>${dept} - Gender Absentees</h3>
+                        <canvas id="gender-${dept}"></canvas>`;
+      chartsContainer.appendChild(box2);
+
+      new Chart(document.getElementById(`gender-${dept}`), {
+        type: 'pie',
+        data: {
+          labels: ['Boys','Girls'],
+          datasets:[{
+            data:[info.M||0, info.F||0],
+            backgroundColor: colorsGender
+          }]
+        },
+        options:{ plugins:{ legend:{ position:'top'} } }
+      });
+    }
+  </script>
+</body>
+</html>
