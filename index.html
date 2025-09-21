@@ -25,7 +25,7 @@ canvas { width:100%; max-width:350px; height:350px !important; }
 <div id="content">Loading dashboard...</div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwN40L5gLYB4ITRg-uDIrno2AHmmqOaYOR1fQBDpPnPL-v00uzn8bJqR2JAvQZJU0B_/exec";
+const SCRIPT_URL = "PASTE_YOUR_DEPLOYED_SCRIPT_URL_HERE";
 
 document.addEventListener("DOMContentLoaded", loadDashboard);
 
@@ -74,20 +74,18 @@ async function loadDashboard(){
       // Table
       let table=`<table>
       <thead>
-        <tr><th>Year</th><th>Total</th><th>Present</th><th>Boys (T)</th><th>Boys (P)</th><th>Girls (T)</th><th>Girls (P)</th></tr>
+        <tr><th>Year</th><th>Total</th><th>Present</th><th>Boys (P)</th><th>Girls (P)</th></tr>
       </thead><tbody>`;
       labels.forEach((y,i)=>{
         table+=`<tr>
           <td>${y}</td>
           <td>${totals[i]}</td>
           <td class="present-count">${presents[i]}</td>
-          <td>${boysT[i]}</td>
           <td class="present-count">${boysP[i]}</td>
-          <td>${girlsT[i]}</td>
           <td class="present-count">${girlsP[i]}</td>
         </tr>`;
       });
-      table+=`</tbody></table>`;
+      table+=`</tbody></tbody></table>`;
 
       const row=document.createElement('div');
       row.className='row';
