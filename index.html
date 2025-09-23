@@ -25,7 +25,7 @@ canvas { width:100%; max-width:350px; height:350px !important; }
 <div id="content">Loading dashboard...</div>
 
 <script>
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDnRUy3PRIlp-K_fFlPMDWWc0yo5DX1JAxNeebD6IJuQRVzyfVf5JLZ9MGwwu1pToy/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyDnRUy3PRIlp-K_fFlPMDWWc0yo5DX1JAxNeebD6IJuQRVzyfVf5JLZ9MGwwu1pToy/exec"; // Ensure this URL is correct
 
 document.addEventListener("DOMContentLoaded", loadDashboard);
 
@@ -85,7 +85,7 @@ async function loadDashboard(){
           <td class="present-count">${girlsP[i]}</td>
         </tr>`;
       });
-      table+=`</tbody></tbody></table>`;
+      table+=`</tbody></table>`;
 
       const row=document.createElement('div');
       row.className='row';
@@ -119,7 +119,6 @@ async function loadDashboard(){
             datalabels:{
               color:'#fff',
               formatter:(v, ctx)=>{
-                // Find the corresponding year and percentage
                 const year = years[ctx.dataIndex];
                 return `${year} Year\n${v}%`;
               },
@@ -138,7 +137,3 @@ async function loadDashboard(){
 </script>
 </body>
 </html>
-
-
-
-
