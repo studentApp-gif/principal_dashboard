@@ -8,197 +8,270 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
 <style>
-body { font-family: Arial, sans-serif; background:#f7f7f7; margin:0; }
-header { background:#004d80; color:white; padding:15px; text-align:center; font-size:1.5rem; }
-
-.controls {
-  background:#fff;
-  max-width:950px;
-  margin:20px auto;
-  padding:15px;
-  border-radius:8px;
-  display:flex;
-  gap:15px;
-  justify-content:center;
+body{font-family:Arial;background:#f7f7f7;margin:0}
+header{
+background:#004d80;color:white;padding:15px;
+text-align:center;font-size:1.5rem
 }
 
-select {
-  padding:8px;
-  font-size:1rem;
+.controls{
+background:#fff;
+max-width:950px;
+margin:20px auto;
+padding:15px;
+border-radius:8px;
+display:flex;
+gap:15px;
+justify-content:center;
+flex-wrap:wrap;
 }
 
-.dept-block {
-  background:#fff;
-  margin:25px auto;
-  padding:20px;
-  max-width:950px;
-  border-radius:8px;
-  box-shadow:0 2px 5px rgba(0,0,0,.1);
+select,input{padding:8px;font-size:1rem}
+
+.dept-block{
+background:#fff;
+margin:25px auto;
+padding:20px;
+max-width:950px;
+border-radius:8px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
 }
-h2 { margin-top:0; color:#004d80; }
-.row { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:20px; }
-.info { flex:1 1 55%; }
 
-table { width:100%; border-collapse:collapse; margin-top:10px;}
-th, td { padding:6px 8px; border:1px solid #ddd; text-align:center;}
-th { background:#004d80; color:#fff;}
+h2{margin-top:0;color:#004d80}
 
-canvas { width:100%; max-width:350px; height:350px !important; }
+.row{
+display:flex;
+flex-wrap:wrap;
+align-items:center;
+justify-content:space-between;
+gap:20px;
+}
 
-.error { color:red; text-align:center; margin-top:20px; font-weight:bold; }
-.present-count { color:green; font-weight:bold; }
+.info{flex:1 1 55%}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px
+}
+
+th,td{
+padding:6px 8px;
+border:1px solid #ddd;
+text-align:center
+}
+
+th{background:#004d80;color:#fff}
+
+canvas{
+width:100%;
+max-width:350px;
+height:350px !important;
+}
+
+.error{color:red;text-align:center;margin-top:20px;font-weight:bold}
+.present-count{color:green;font-weight:bold}
 </style>
 </head>
 
 <body>
 
 <header>
-  Today Attendance Report | SVCE Kadapa (AUTONOMOUS)
+Principal Attendance Dashboard | SVCE Kadapa
 </header>
 
-<!-- SESSION SELECTOR -->
+<!-- CONTROLS -->
 <div class="controls">
-  <label>
-    Session:
-    <select id="sessionSelect" onchange="loadDashboard()">
-      <option value="Morning">Morning</option>
-      <option value="Afternoon">Afternoon</option>
-    </select>
-  </label>
+
+<label>
+Date:
+<input type="date" id="dateSelect">
+</label>
+
+<label>
+Session:
+<select id="sessionSelect">
+<option value="Morning">Morning</option>
+<option value="Afternoon">Afternoon</option>
+</select>
+</label>
+
+<button onclick="loadDashboard()">Load Report</button>
+
 </div>
 
-<div id="content">Loading dashboard...</div>
+<div id="content">Select date and session</div>
 
 <script>
+
 const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbxtGnW8H80idRVxQGbRHZcpgifYQyUTvbEaQAwTzYrauctCywQnU7jiCCNZUNeMjI8w/exec";
 
-document.addEventListener("DOMContentLoaded", loadDashboard);
+const charts=[];
+
+document.addEventListener("DOMContentLoaded",()=>{
+document.getElementById("dateSelect").value =
+new Date().toISOString().split("T")[0];
+});
+
 
 async function loadDashboard(){
-  const container = document.getElementById("content");
-  const session = document.getElementById("sessionSelect").value;
 
-  container.innerHTML = "Loading dashboard...";
+const container=document.getElementById("content");
+const date=document.getElementById("dateSelect").value;
+const session=document.getElementById("sessionSelect").value;
 
-  try {
-    const today = new Date().toISOString().split("T")[0];
-    const res = await fetch(
-      `${SCRIPT_URL}?action=getPrincipalSummary&date=${today}&session=${session}`
-    );
-    const json = await res.json();
+container.innerHTML="Loading dashboard...";
 
-    if (!json.success) throw new Error(json.message);
+// Destroy old charts
+charts.forEach(c=>c.destroy());
+charts.length=0;
 
-    const data = json.data;
-    container.innerHTML = "";
+try{
 
-    // Group by department
-    const depts = {};
-    Object.keys(data).forEach(k => {
-      const [dept, year] = k.split("-");
-      if (!depts[dept]) depts[dept] = {};
-      depts[dept][year] = data[k];
-    });
+const res=await fetch(
+`${SCRIPT_URL}?action=getPrincipalSummary&date=${date}&session=${session}`
+);
 
-    Object.keys(depts).forEach(dept => {
-      const yearsData = depts[dept];
+const json=await res.json();
 
-      const block = document.createElement("div");
-      block.className = "dept-block";
-      block.innerHTML = `<h2>${dept} Department (${session})</h2>`;
-
-      const labels = [], perc = [], years = [];
-      const totals = [], presents = [];
-      const boysP = [], girlsP = [];
-
-      Object.keys(yearsData).forEach(year => {
-        const st = yearsData[year];
-        years.push(year);
-        labels.push(`${year} Year`);
-        totals.push(st.total);
-        presents.push(st.present);
-        boysP.push(st.boysPresent);
-        girlsP.push(st.girlsPresent);
-        perc.push(st.total ? ((st.present / st.total) * 100).toFixed(1) : 0);
-      });
-
-      // TABLE
-      let table = `
-        <table>
-          <thead>
-            <tr>
-              <th>Year</th>
-              <th>Total</th>
-              <th>Present</th>
-              <th>Boys (P)</th>
-              <th>Girls (P)</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-      labels.forEach((y, i) => {
-        table += `
-          <tr>
-            <td>${y}</td>
-            <td>${totals[i]}</td>
-            <td class="present-count">${presents[i]}</td>
-            <td class="present-count">${boysP[i]}</td>
-            <td class="present-count">${girlsP[i]}</td>
-          </tr>
-        `;
-      });
-      table += "</tbody></table>";
-
-      const row = document.createElement("div");
-      row.className = "row";
-
-      const info = document.createElement("div");
-      info.className = "info";
-      info.innerHTML = table;
-
-      const chartWrap = document.createElement("div");
-      const canvas = document.createElement("canvas");
-      chartWrap.appendChild(canvas);
-
-      row.appendChild(info);
-      row.appendChild(chartWrap);
-      block.appendChild(row);
-      container.appendChild(block);
-
-      // PIE CHART
-      new Chart(canvas, {
-        type: "pie",
-        data: {
-          labels: labels.map((l, i) => `${l} (${perc[i]}%)`),
-          datasets: [{
-            data: perc,
-            backgroundColor: [
-              "#42a5f5","#66bb6a","#ffa726",
-              "#ef5350","#ab47bc","#29b6f6"
-            ]
-          }]
-        },
-        options: {
-          plugins: {
-            legend: { position: "bottom" },
-            datalabels: {
-              color: "#fff",
-              formatter: (v, ctx) =>
-                `${years[ctx.dataIndex]} Year\n${v}%`,
-              font: { weight: "bold", size: 13 }
-            }
-          }
-        },
-        plugins: [ChartDataLabels]
-      });
-    });
-
-  } catch (err) {
-    container.innerHTML = `<p class="error">${err.message}</p>`;
-  }
+if(!json.success){
+container.innerHTML=`<p class="error">${json.message}</p>`;
+return;
 }
+
+const data=json.data;
+
+if(!data || Object.keys(data).length===0){
+container.innerHTML="<p class='error'>No attendance found</p>";
+return;
+}
+
+container.innerHTML="";
+
+// Group department wise
+const deptMap={};
+
+Object.keys(data).forEach(k=>{
+const [dept,year]=k.split("-");
+if(!deptMap[dept]) deptMap[dept]={};
+deptMap[dept][year]=data[k];
+});
+
+
+Object.keys(deptMap).forEach(dept=>{
+
+const yearsData=deptMap[dept];
+
+const block=document.createElement("div");
+block.className="dept-block";
+block.innerHTML=`<h2>${dept} Department (${session})</h2>`;
+
+const labels=[],perc=[],years=[];
+const totals=[],presents=[],boysP=[],girlsP=[];
+
+Object.keys(yearsData).forEach(year=>{
+
+const st=yearsData[year];
+
+years.push(year);
+labels.push(`${year} Year`);
+
+totals.push(st.total);
+presents.push(st.present);
+boysP.push(st.boysPresent);
+girlsP.push(st.girlsPresent);
+
+perc.push(
+st.total ? ((st.present/st.total)*100).toFixed(1) : 0
+);
+
+});
+
+
+/* TABLE */
+let table=`<table>
+<thead>
+<tr>
+<th>Year</th>
+<th>Total</th>
+<th>Present</th>
+<th>Boys (P)</th>
+<th>Girls (P)</th>
+</tr>
+</thead><tbody>`;
+
+labels.forEach((y,i)=>{
+table+=`
+<tr>
+<td>${y}</td>
+<td>${totals[i]}</td>
+<td class="present-count">${presents[i]}</td>
+<td class="present-count">${boysP[i]}</td>
+<td class="present-count">${girlsP[i]}</td>
+</tr>`;
+});
+
+table+="</tbody></table>";
+
+const row=document.createElement("div");
+row.className="row";
+
+const info=document.createElement("div");
+info.className="info";
+info.innerHTML=table;
+
+const chartWrap=document.createElement("div");
+const canvas=document.createElement("canvas");
+chartWrap.appendChild(canvas);
+
+row.appendChild(info);
+row.appendChild(chartWrap);
+
+block.appendChild(row);
+container.appendChild(block);
+
+
+/* CHART */
+const chart=new Chart(canvas,{
+type:"pie",
+data:{
+labels:labels.map((l,i)=>`${l} (${perc[i]}%)`),
+datasets:[{
+data:perc,
+backgroundColor:[
+"#42a5f5","#66bb6a","#ffa726",
+"#ef5350","#ab47bc","#29b6f6"
+]
+}]
+},
+options:{
+plugins:{
+legend:{position:"bottom"},
+datalabels:{
+color:"#fff",
+formatter:(v,ctx)=>`${years[ctx.dataIndex]} Year\n${v}%`,
+font:{weight:"bold",size:13}
+}
+}
+},
+plugins:[ChartDataLabels]
+});
+
+charts.push(chart);
+
+});
+
+}catch(err){
+
+container.innerHTML=`<p class="error">${err.message}</p>`;
+
+}
+
+}
+
 </script>
 
 </body>
 </html>
+
