@@ -2,18 +2,28 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Principal Dashboard | SVCE Kadapa</title>
+<title>Principal Attendance Dashboard | SVCE Kadapa</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
 <style>
-body{font-family:Arial;background:#f7f7f7;margin:0}
-header{
-background:#004d80;color:white;padding:15px;
-text-align:center;font-size:1.5rem
+
+body{
+font-family:Arial;
+background:#f7f7f7;
+margin:0;
 }
 
+header{
+background:#004d80;
+color:white;
+padding:15px;
+text-align:center;
+font-size:1.5rem;
+}
+
+/* Controls */
 .controls{
 background:#fff;
 max-width:950px;
@@ -26,8 +36,12 @@ justify-content:center;
 flex-wrap:wrap;
 }
 
-select,input{padding:8px;font-size:1rem}
+select,input{
+padding:8px;
+font-size:1rem;
+}
 
+/* Dept Blocks */
 .dept-block{
 background:#fff;
 margin:25px auto;
@@ -37,7 +51,10 @@ border-radius:8px;
 box-shadow:0 2px 5px rgba(0,0,0,.1);
 }
 
-h2{margin-top:0;color:#004d80}
+h2{
+margin-top:0;
+color:#004d80;
+}
 
 .row{
 display:flex;
@@ -47,21 +64,26 @@ justify-content:space-between;
 gap:20px;
 }
 
-.info{flex:1 1 55%}
+.info{
+flex:1 1 55%;
+}
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px
+margin-top:10px;
 }
 
 th,td{
 padding:6px 8px;
 border:1px solid #ddd;
-text-align:center
+text-align:center;
 }
 
-th{background:#004d80;color:#fff}
+th{
+background:#004d80;
+color:#fff;
+}
 
 canvas{
 width:100%;
@@ -69,8 +91,18 @@ max-width:350px;
 height:350px !important;
 }
 
-.error{color:red;text-align:center;margin-top:20px;font-weight:bold}
-.present-count{color:green;font-weight:bold}
+.error{
+color:red;
+text-align:center;
+margin-top:20px;
+font-weight:bold;
+}
+
+.present-count{
+color:green;
+font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -80,7 +112,7 @@ height:350px !important;
 Principal Attendance Dashboard | SVCE Kadapa
 </header>
 
-<!-- CONTROLS -->
+<!-- Controls -->
 <div class="controls">
 
 <label>
@@ -104,43 +136,49 @@ Session:
 
 <script>
 
+/* ========= CONFIG ========= */
+
 const SCRIPT_URL =
-"https://script.google.com/macros/s/AKfycbxtGnW8H80idRVxQGbRHZcpgifYQyUTvbEaQAwTzYrauctCywQnU7jiCCNZUNeMjI8w/exec";
+"https://script.google.com/macros/s/AKfycbwnwn20CSLQrT55Kfyw_CoBM2PipoNMzbEPpVDocuMBF1zn81LLuEYNxuS0-X95XU5t/exec";
 
-const charts=[];
+let charts=[];
 
+/* Default today's date */
 document.addEventListener("DOMContentLoaded",()=>{
 document.getElementById("dateSelect").value =
 new Date().toISOString().split("T")[0];
 });
 
 
+/* ========= LOAD DASHBOARD ========= */
+
 async function loadDashboard(){
 
-const container=document.getElementById("content");
-const date=document.getElementById("dateSelect").value;
-const session=document.getElementById("sessionSelect").value;
+const container = document.getElementById("content");
+
+const date = document.getElementById("dateSelect").value;
+const session = document.getElementById("sessionSelect").value;
 
 container.innerHTML="Loading dashboard...";
 
-// Destroy old charts
+/* Destroy old charts */
 charts.forEach(c=>c.destroy());
-charts.length=0;
+charts=[];
 
 try{
 
-const res=await fetch(
+const res = await fetch(
 `${SCRIPT_URL}?action=getPrincipalSummary&date=${date}&session=${session}`
 );
 
-const json=await res.json();
+const json = await res.json();
 
 if(!json.success){
 container.innerHTML=`<p class="error">${json.message}</p>`;
 return;
 }
 
-const data=json.data;
+const data = json.data;
 
 if(!data || Object.keys(data).length===0){
 container.innerHTML="<p class='error'>No attendance found</p>";
@@ -149,47 +187,69 @@ return;
 
 container.innerHTML="";
 
-// Group department wise
+/* ===== GROUP BY DEPARTMENT ===== */
+
 const deptMap={};
 
-Object.keys(data).forEach(k=>{
-const [dept,year]=k.split("-");
+Object.keys(data).forEach(key=>{
+
+const [dept,year] = key.split("-");
+
 if(!deptMap[dept]) deptMap[dept]={};
-deptMap[dept][year]=data[k];
+
+deptMap[dept][year] = data[key];
+
 });
 
 
+/* ===== BUILD UI ===== */
+
 Object.keys(deptMap).forEach(dept=>{
 
-const yearsData=deptMap[dept];
+const yearsData = deptMap[dept];
 
-const block=document.createElement("div");
+const block = document.createElement("div");
 block.className="dept-block";
-block.innerHTML=`<h2>${dept} Department (${session})</h2>`;
 
-const labels=[],perc=[],years=[];
-const totals=[],presents=[],boysP=[],girlsP=[];
+block.innerHTML =
+`<h2>${dept} Department (${session})</h2>`;
 
-Object.keys(yearsData).forEach(year=>{
 
-const st=yearsData[year];
+/* Arrays for chart */
+const labels=[];
+const perc=[];
+const years=[];
+
+const totals=[];
+const presents=[];
+const boysP=[];
+const girlsP=[];
+
+
+/* Process Year Data */
+
+Object.keys(yearsData).sort().forEach(year=>{
+
+const st = yearsData[year];
 
 years.push(year);
 labels.push(`${year} Year`);
 
-totals.push(st.total);
-presents.push(st.present);
-boysP.push(st.boysPresent);
-girlsP.push(st.girlsPresent);
+totals.push(st.total || 0);
+presents.push(st.present || 0);
+boysP.push(st.boysPresent || 0);
+girlsP.push(st.girlsPresent || 0);
 
-perc.push(
-st.total ? ((st.present/st.total)*100).toFixed(1) : 0
-);
+const percentage =
+st.total ? ((st.present/st.total)*100).toFixed(1) : 0;
+
+perc.push(percentage);
 
 });
 
 
-/* TABLE */
+/* ===== TABLE ===== */
+
 let table=`<table>
 <thead>
 <tr>
@@ -223,6 +283,7 @@ info.innerHTML=table;
 
 const chartWrap=document.createElement("div");
 const canvas=document.createElement("canvas");
+
 chartWrap.appendChild(canvas);
 
 row.appendChild(info);
@@ -232,16 +293,21 @@ block.appendChild(row);
 container.appendChild(block);
 
 
-/* CHART */
-const chart=new Chart(canvas,{
+/* ===== PIE CHART ===== */
+
+const chart = new Chart(canvas,{
 type:"pie",
 data:{
 labels:labels.map((l,i)=>`${l} (${perc[i]}%)`),
 datasets:[{
 data:perc,
 backgroundColor:[
-"#42a5f5","#66bb6a","#ffa726",
-"#ef5350","#ab47bc","#29b6f6"
+"#42a5f5",
+"#66bb6a",
+"#ffa726",
+"#ef5350",
+"#ab47bc",
+"#29b6f6"
 ]
 }]
 },
@@ -274,4 +340,3 @@ container.innerHTML=`<p class="error">${err.message}</p>`;
 
 </body>
 </html>
-
