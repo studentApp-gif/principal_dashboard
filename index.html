@@ -2,105 +2,102 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Principal Attendance Dashboard | SVCE Kadapa</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+<title>Principal Attendance Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 
 body{
-font-family:Arial;
-background:#f7f7f7;
-margin:0;
+  font-family: Arial;
+  background:#f7f7f7;
+  margin:0;
 }
 
 header{
-background:#004d80;
-color:white;
-padding:15px;
-text-align:center;
-font-size:1.5rem;
+  background:#004d80;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:1.5rem;
 }
 
-/* Controls */
 .controls{
-background:#fff;
-max-width:950px;
-margin:20px auto;
-padding:15px;
-border-radius:8px;
-display:flex;
-gap:15px;
-justify-content:center;
-flex-wrap:wrap;
+  background:white;
+  max-width:900px;
+  margin:20px auto;
+  padding:15px;
+  border-radius:8px;
+  display:flex;
+  gap:15px;
+  justify-content:center;
+  flex-wrap:wrap;
 }
 
-select,input{
-padding:8px;
-font-size:1rem;
+select,input,button{
+  padding:8px;
+  font-size:1rem;
 }
 
-/* Dept Blocks */
+button{
+  background:#337ab7;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#23527c;
+}
+
 .dept-block{
-background:#fff;
-margin:25px auto;
-padding:20px;
-max-width:950px;
-border-radius:8px;
-box-shadow:0 2px 5px rgba(0,0,0,.1);
+  background:white;
+  margin:20px auto;
+  padding:20px;
+  max-width:900px;
+  border-radius:8px;
+  box-shadow:0 2px 5px rgba(0,0,0,.1);
 }
 
 h2{
-margin-top:0;
-color:#004d80;
-}
-
-.row{
-display:flex;
-flex-wrap:wrap;
-align-items:center;
-justify-content:space-between;
-gap:20px;
-}
-
-.info{
-flex:1 1 55%;
+  margin-top:0;
+  color:#004d80;
 }
 
 table{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
 }
 
 th,td{
-padding:6px 8px;
-border:1px solid #ddd;
-text-align:center;
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
 }
 
 th{
-background:#004d80;
-color:#fff;
+  background:#004d80;
+  color:white;
 }
 
-canvas{
-width:100%;
-max-width:350px;
-height:350px !important;
+.present{
+  color:green;
+  font-weight:bold;
 }
 
 .error{
-color:red;
-text-align:center;
-margin-top:20px;
-font-weight:bold;
+  color:red;
+  text-align:center;
+  font-weight:bold;
 }
 
-.present-count{
-color:green;
-font-weight:bold;
+.summary-box{
+  background:#e8f4ff;
+  padding:10px;
+  border-radius:6px;
+  margin-top:10px;
+  text-align:center;
+  font-weight:bold;
 }
 
 </style>
@@ -109,10 +106,9 @@ font-weight:bold;
 <body>
 
 <header>
-Principal Attendance Dashboard | SVCE Kadapa
+Principal Attendance Dashboard
 </header>
 
-<!-- Controls -->
 <div class="controls">
 
 <label>
@@ -136,203 +132,146 @@ Session:
 
 <script>
 
-/* ========= CONFIG ========= */
-
 const SCRIPT_URL =
 "https://script.google.com/macros/s/AKfycbwnwn20CSLQrT55Kfyw_CoBM2PipoNMzbEPpVDocuMBF1zn81LLuEYNxuS0-X95XU5t/exec";
 
-let charts=[];
 
-/* Default today's date */
+/* Auto set today date */
 document.addEventListener("DOMContentLoaded",()=>{
-document.getElementById("dateSelect").value =
-new Date().toISOString().split("T")[0];
+  document.getElementById("dateSelect").value =
+    new Date().toISOString().split("T")[0];
 });
 
 
-/* ========= LOAD DASHBOARD ========= */
+/* ===== LOAD PRINCIPAL DASHBOARD ===== */
 
 async function loadDashboard(){
 
-const container = document.getElementById("content");
+  const container = document.getElementById("content");
+  const date = document.getElementById("dateSelect").value;
+  const session = document.getElementById("sessionSelect").value;
 
-const date = document.getElementById("dateSelect").value;
-const session = document.getElementById("sessionSelect").value;
+  container.innerHTML = "Loading attendance...";
 
-container.innerHTML="Loading dashboard...";
+  try{
 
-/* Destroy old charts */
-charts.forEach(c=>c.destroy());
-charts=[];
+    const res = await fetch(
+      `${SCRIPT_URL}?action=getAttendanceByDate&date=${date}&session=${session}`
+    );
 
-try{
+    const json = await res.json();
 
-const res = await fetch(
-`${SCRIPT_URL}?action=getPrincipalSummary&date=${date}&session=${session}`
-);
+    if(!json.success){
+      container.innerHTML = `<p class="error">${json.message}</p>`;
+      return;
+    }
 
-const json = await res.json();
+    const data = json.data;
 
-if(!json.success){
-container.innerHTML=`<p class="error">${json.message}</p>`;
-return;
-}
+    if(!data || data.length === 0){
+      container.innerHTML = "<p class='error'>No attendance found</p>";
+      return;
+    }
 
-const data = json.data;
+    container.innerHTML = "";
 
-if(!data || Object.keys(data).length===0){
-container.innerHTML="<p class='error'>No attendance found</p>";
-return;
-}
+    /* GROUP DATA DEPT + YEAR */
+    const grouped = {};
 
-container.innerHTML="";
+    let grandTotal = 0;
+    let grandPresent = 0;
 
-/* ===== GROUP BY DEPARTMENT ===== */
+    data.forEach(r => {
 
-const deptMap={};
+      if(!grouped[r.dept]) grouped[r.dept] = {};
+      grouped[r.dept][r.year] = r;
 
-Object.keys(data).forEach(key=>{
+      const boys = Number(r.boys || 0);
+      const girls = Number(r.girls || 0);
 
-const [dept,year] = key.split("-");
+      grandPresent += boys + girls;
+      grandTotal++;
 
-if(!deptMap[dept]) deptMap[dept]={};
-
-deptMap[dept][year] = data[key];
-
-});
-
-
-/* ===== BUILD UI ===== */
-
-Object.keys(deptMap).forEach(dept=>{
-
-const yearsData = deptMap[dept];
-
-const block = document.createElement("div");
-block.className="dept-block";
-
-block.innerHTML =
-`<h2>${dept} Department (${session})</h2>`;
+    });
 
 
-/* Arrays for chart */
-const labels=[];
-const perc=[];
-const years=[];
+    /* DISPLAY EACH DEPARTMENT */
+    Object.keys(grouped).forEach(dept => {
 
-const totals=[];
-const presents=[];
-const boysP=[];
-const girlsP=[];
+      const block = document.createElement("div");
+      block.className = "dept-block";
 
+      block.innerHTML = `<h2>${dept} Department (${session})</h2>`;
 
-/* Process Year Data */
+      let deptPresent = 0;
 
-Object.keys(yearsData).sort().forEach(year=>{
+      let table = `
+        <table>
+        <thead>
+        <tr>
+          <th>Year</th>
+          <th>Boys Present</th>
+          <th>Girls Present</th>
+          <th>Total Present</th>
+        </tr>
+        </thead>
+        <tbody>
+      `;
 
-const st = yearsData[year];
+      Object.keys(grouped[dept]).forEach(year => {
 
-years.push(year);
-labels.push(`${year} Year`);
+        const rec = grouped[dept][year];
 
-totals.push(st.total || 0);
-presents.push(st.present || 0);
-boysP.push(st.boysPresent || 0);
-girlsP.push(st.girlsPresent || 0);
+        const boys = Number(rec.boys || 0);
+        const girls = Number(rec.girls || 0);
+        const total = boys + girls;
 
-const percentage =
-st.total ? ((st.present/st.total)*100).toFixed(1) : 0;
+        deptPresent += total;
 
-perc.push(percentage);
+        table += `
+          <tr>
+            <td>${year} Year</td>
+            <td class="present">${boys}</td>
+            <td class="present">${girls}</td>
+            <td class="present">${total}</td>
+          </tr>
+        `;
 
-});
+      });
 
+      table += "</tbody></table>";
 
-/* ===== TABLE ===== */
+      block.innerHTML += table;
 
-let table=`<table>
-<thead>
-<tr>
-<th>Year</th>
-<th>Total</th>
-<th>Present</th>
-<th>Boys (P)</th>
-<th>Girls (P)</th>
-</tr>
-</thead><tbody>`;
+      block.innerHTML += `
+        <div class="summary-box">
+          Department Total Present : ${deptPresent}
+        </div>
+      `;
 
-labels.forEach((y,i)=>{
-table+=`
-<tr>
-<td>${y}</td>
-<td>${totals[i]}</td>
-<td class="present-count">${presents[i]}</td>
-<td class="present-count">${boysP[i]}</td>
-<td class="present-count">${girlsP[i]}</td>
-</tr>`;
-});
+      container.appendChild(block);
 
-table+="</tbody></table>";
-
-const row=document.createElement("div");
-row.className="row";
-
-const info=document.createElement("div");
-info.className="info";
-info.innerHTML=table;
-
-const chartWrap=document.createElement("div");
-const canvas=document.createElement("canvas");
-
-chartWrap.appendChild(canvas);
-
-row.appendChild(info);
-row.appendChild(chartWrap);
-
-block.appendChild(row);
-container.appendChild(block);
+    });
 
 
-/* ===== PIE CHART ===== */
+    /* GRAND SUMMARY */
+    const summary = document.createElement("div");
+    summary.className = "dept-block";
 
-const chart = new Chart(canvas,{
-type:"pie",
-data:{
-labels:labels.map((l,i)=>`${l} (${perc[i]}%)`),
-datasets:[{
-data:perc,
-backgroundColor:[
-"#42a5f5",
-"#66bb6a",
-"#ffa726",
-"#ef5350",
-"#ab47bc",
-"#29b6f6"
-]
-}]
-},
-options:{
-plugins:{
-legend:{position:"bottom"},
-datalabels:{
-color:"#fff",
-formatter:(v,ctx)=>`${years[ctx.dataIndex]} Year\n${v}%`,
-font:{weight:"bold",size:13}
-}
-}
-},
-plugins:[ChartDataLabels]
-});
+    summary.innerHTML = `
+      <h2>Overall College Summary</h2>
+      <div class="summary-box">
+        Total Present Students : ${grandPresent}
+      </div>
+    `;
 
-charts.push(chart);
+    container.appendChild(summary);
 
-});
+  }catch(err){
 
-}catch(err){
+    container.innerHTML = `<p class="error">${err.message}</p>`;
 
-container.innerHTML=`<p class="error">${err.message}</p>`;
-
-}
+  }
 
 }
 
