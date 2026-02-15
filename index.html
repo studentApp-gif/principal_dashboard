@@ -1,37 +1,54 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Principal Dashboard | SVCE</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 <style>
-body{  font-family: 'Segoe UI', Arial;  background: linear-gradient(135deg,#eef3f8,#dfe9f3);  margin:0;}
-/* ===== HEADER ===== */header{  background: linear-gradient(90deg,#003366,#004d80);  color:white;  padding:18px;  text-align:center;  font-size:1.6rem;  font-weight:bold;  letter-spacing:1px;  box-shadow:0 3px 8px rgba(0,0,0,.2);}
-/* ===== CONTROLS ===== */.controls{  background:white;  max-width:950px;  margin:25px auto;  padding:20px;  border-radius:12px;  display:flex;  gap:20px;  justify-content:center;  align-items:center;  flex-wrap:wrap;  box-shadow:0 4px 12px rgba(0,0,0,.08);  transition:.3s ease;}
-.controls:hover{  transform:translateY(-2px);}
-select,input{  padding:10px;  font-size:1rem;  border:1px solid #ccc;  border-radius:6px;}
-button{  padding:10px 20px;  font-size:1rem;  background:linear-gradient(90deg,#004d80,#0073b1);  color:white;  border:none;  border-radius:6px;  cursor:pointer;  transition:.3s;}
-button:hover{  transform:scale(1.05);  box-shadow:0 4px 10px rgba(0,0,0,.2);}
-/* ===== DEPARTMENT BLOCK ===== */.dept-block{  background:white;  margin:30px auto;  padding:25px;  max-width:950px;  border-radius:15px;  box-shadow:0 6px 18px rgba(0,0,0,.08);  animation:fadeInUp .5s ease;}
-@keyframes fadeInUp{  from{opacity:0; transform:translateY(15px);}  to{opacity:1; transform:translateY(0);}}
-.dept-block h2{  text-align:center;  color:#004d80;  margin-bottom:20px;}
-/* ===== ROW LAYOUT ===== */.row{  display:flex;  flex-wrap:wrap;  gap:25px;  align-items:center;  justify-content:space-between;}
+/* ================= GLOBAL ================= */
+body{  margin:0;  font-family: "Segoe UI", Arial, sans-serif;  background:#eef3f8;}
+/* ================= HEADER ================= */
+header{  background:linear-gradient(90deg,#003f6b,#005c99);  color:white;  padding:18px;  text-align:center;  font-size:22px;  font-weight:600;  letter-spacing:1px;  box-shadow:0 3px 10px rgba(0,0,0,0.2);}
+/* ================= CONTROLS ================= */
+.controls{  background:white;  max-width:1000px;  margin:30px auto;  padding:20px;  border-radius:12px;  box-shadow:0 6px 20px rgba(0,0,0,.08);  display:flex;  gap:20px;  justify-content:center;  flex-wrap:wrap;  animation:fadeIn 0.5s ease-in-out;}
+.controls label{  font-weight:600;  color:#003f6b;}
+select,input{  padding:10px;  border-radius:6px;  border:1px solid #ccc;  font-size:14px;  transition:all 0.3s ease;}
+select:focus,input:focus{  outline:none;  border-color:#005c99;  box-shadow:0 0 6px rgba(0,92,153,0.3);}
+button{  padding:10px 20px;  border:none;  border-radius:6px;  background:#005c99;  color:white;  font-size:14px;  cursor:pointer;  transition:all 0.3s ease;}
+button:hover{  background:#003f6b;  transform:scale(1.05);}
+/* ================= DEPARTMENT BLOCK ================= */
+.dept-block{  background:white;  margin:35px auto;  padding:25px;  max-width:1000px;  border-radius:14px;  box-shadow:0 6px 25px rgba(0,0,0,.08);  animation:fadeInUp 0.6s ease;}
+.dept-block h2{  text-align:center;  color:#003f6b;  margin-bottom:25px;  font-weight:600;}
+/* ================= ROW ================= */
+.row{  display:flex;  flex-wrap:wrap;  gap:30px;  align-items:center;  justify-content:space-between;}
 .info{  flex:1 1 55%;}
-/* ===== TABLE ===== */table{  width:100%;  border-collapse:collapse;  margin-top:10px;  font-size:.95rem;}
-th,td{  padding:10px;  border:1px solid #e0e0e0;  text-align:center;}
-th{  background:linear-gradient(90deg,#004d80,#0066a1);  color:white;}
-tbody tr:hover{  background:#f3f9ff;  transition:.3s;}
-.present-count{  color:#0a7c28;  font-weight:bold;}
-/* ===== CHART ===== */canvas{  max-width:380px;  height:350px !important;}
-/* ===== ERROR ===== */.error{  color:#d32f2f;  text-align:center;  font-weight:bold;  font-size:1.1rem;}
-/* ===== RESPONSIVE ===== */@media(max-width:768px){  .row{    flex-direction:column;    align-items:center;  }  canvas{    max-width:100%;  }}
+/* ================= TABLE ================= */
+table{  width:100%;  border-collapse:collapse;  font-size:14px;}
+th,td{  padding:12px;  border:1px solid #e0e0e0;  text-align:center;}
+th{  background:#003f6b;  color:white;  font-weight:600;}
+tbody tr:nth-child(even){  background:#f5f9ff;}
+tbody tr:hover{  background:#e3f2fd;  transition:0.2s;}
+.present-count{  color:#2e7d32;  font-weight:bold;}
+/* ================= CHART ================= */
+canvas{  max-width:380px;  height:360px !important;}
+/* ================= ERROR ================= */
+.error{  color:#c62828;  text-align:center;  font-weight:bold;  margin-top:20px;}
+/* ================= ANIMATIONS ================= */
+@keyframes fadeIn{  from{opacity:0;}  to{opacity:1;}}
+@keyframes fadeInUp{  from{opacity:0; transform:translateY(20px);}  to{opacity:1; transform:translateY(0);}}
+/* ================= RESPONSIVE ================= */
+@media(max-width:768px){
+  .row{    flex-direction:column;  }
+  canvas{    max-width:100%;  }
+  .controls{    flex-direction:column;    align-items:center;  }}
 </style></head>
 <body>
-<header> SVCE Students Attendance Review Dashboard</header>
+<header>SVCE STUDENTS ATTENDANCE  REVIEW DASHBOARD </header>
+  <header> SVCE PRICIPAL DASHBOARD </header>
 <div class="controls">
 <label>Date:<input type="date" id="dateSelect"></label>
 <label>Session:<select id="sessionSelect"><option value="Morning">Morning</option><option value="Afternoon">Afternoon</option></select></label>
 <button onclick="loadDashboard()">Load Report</button>
 </div>
-<div id="content" style="text-align:center;font-weight:bold;">Select date and session</div>
+<div id="content" style="text-align:center;font-weight:500;">Select date and session</div>
 <script>
-/* ===== YOUR ORIGINAL JS LOGIC (UNCHANGED) ===== */
+/* ================= ORIGINAL LOGIC UNCHANGED ================= */
 const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbwnwn20CSLQrT55Kfyw_CoBM2PipoNMzbEPpVDocuMBF1zn81LLuEYNxuS0-X95XU5t/exec";
 const charts=[];
 document.addEventListener("DOMContentLoaded",()=>{  document.getElementById("dateSelect").value =    new Date().toISOString().split("T")[0];});
@@ -56,7 +73,8 @@ async function loadDashboard(){
         const st=yearsData[year];
         years.push(year);        labels.push(`${year} Year`);
         totals.push(st.total);        presents.push(st.present);        boysP.push(st.boysPresent);        girlsP.push(st.girlsPresent);
-        perc.push(          st.total ? ((st.present/st.total)*100).toFixed(1) : 0        );      });
+        perc.push(          st.total ? ((st.present/st.total)*100).toFixed(1) : 0        );
+      });
       let table=`      <table>      <thead>      <tr>        <th>Year</th>        <th>Total Students</th>        <th>Present</th>        <th>Boys (P)</th>        <th>Girls (P)</th>        <th>%</th>      </tr>      </thead>      <tbody>      `;
       labels.forEach((y,i)=>{        table+=`        <tr>          <td>${y}</td>          <td>${totals[i]}</td>          <td class="present-count">${presents[i]}</td>          <td>${boysP[i]}</td>          <td>${girlsP[i]}</td>          <td>${perc[i]}%</td>        </tr>`;      });
       table+="</tbody></table>";
