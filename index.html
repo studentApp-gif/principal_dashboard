@@ -1,91 +1,59 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Principal Dashboard | SVCE</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-<style>
-/* ================= GLOBAL ================= */
-body{  margin:0;  font-family: "Segoe UI", Arial, sans-serif;  background:#eef3f8;}
-/* ================= HEADER ================= */
-header{  background:linear-gradient(90deg,#003f6b,#005c99);  color:white;  padding:18px;  text-align:center;  font-size:22px;  font-weight:600;  letter-spacing:1px;  box-shadow:0 3px 10px rgba(0,0,0,0.2);}
-/* ================= CONTROLS ================= */
-.controls{  background:white;  max-width:1000px;  margin:30px auto;  padding:20px;  border-radius:12px;  box-shadow:0 6px 20px rgba(0,0,0,.08);  display:flex;  gap:20px;  justify-content:center;  flex-wrap:wrap;  animation:fadeIn 0.5s ease-in-out;}
-.controls label{  font-weight:600;  color:#003f6b;}
-select,input{  padding:10px;  border-radius:6px;  border:1px solid #ccc;  font-size:14px;  transition:all 0.3s ease;}
-select:focus,input:focus{  outline:none;  border-color:#005c99;  box-shadow:0 0 6px rgba(0,92,153,0.3);}
-button{  padding:10px 20px;  border:none;  border-radius:6px;  background:#005c99;  color:white;  font-size:14px;  cursor:pointer;  transition:all 0.3s ease;}
-button:hover{  background:#003f6b;  transform:scale(1.05);}
-/* ================= DEPARTMENT BLOCK ================= */
-.dept-block{  background:white;  margin:35px auto;  padding:25px;  max-width:1000px;  border-radius:14px;  box-shadow:0 6px 25px rgba(0,0,0,.08);  animation:fadeInUp 0.6s ease;}
-.dept-block h2{  text-align:center;  color:#003f6b;  margin-bottom:25px;  font-weight:600;}
-/* ================= ROW ================= */
-.row{  display:flex;  flex-wrap:wrap;  gap:30px;  align-items:center;  justify-content:space-between;}
-.info{  flex:1 1 55%;}
-/* ================= TABLE ================= */
-table{  width:100%;  border-collapse:collapse;  font-size:14px;}
-th,td{  padding:12px;  border:1px solid #e0e0e0;  text-align:center;}
-th{  background:#003f6b;  color:white;  font-weight:600;}
-tbody tr:nth-child(even){  background:#f5f9ff;}
-tbody tr:hover{  background:#e3f2fd;  transition:0.2s;}
-.present-count{  color:#2e7d32;  font-weight:bold;}
-/* ================= CHART ================= */
-canvas{  max-width:380px;  height:360px !important;}
-/* ================= ERROR ================= */
-.error{  color:#c62828;  text-align:center;  font-weight:bold;  margin-top:20px;}
-/* ================= ANIMATIONS ================= */
-@keyframes fadeIn{  from{opacity:0;}  to{opacity:1;}}
-@keyframes fadeInUp{  from{opacity:0; transform:translateY(20px);}  to{opacity:1; transform:translateY(0);}}
-/* ================= RESPONSIVE ================= */
-@media(max-width:768px){
-  .row{    flex-direction:column;  }
-  canvas{    max-width:100%;  }
-  .controls{    flex-direction:column;    align-items:center;  }}
-</style></head>
-<body>
-<header>SVCE STUDENTS ATTENDANCE  REVIEW DASHBOARD </header>
-  <header> SVCE PRICIPAL DASHBOARD </header>
-<div class="controls">
-<label>Date:<input type="date" id="dateSelect"></label>
-<label>Session:<select id="sessionSelect"><option value="Morning">Morning</option><option value="Afternoon">Afternoon</option></select></label>
-<button onclick="loadDashboard()">Load Report</button>
-</div>
-<div id="content" style="text-align:center;font-weight:500;">Select date and session</div>
-<script>
-/* ================= ORIGINAL LOGIC UNCHANGED ================= */
-const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbwnwn20CSLQrT55Kfyw_CoBM2PipoNMzbEPpVDocuMBF1zn81LLuEYNxuS0-X95XU5t/exec";
+<!DOCTYPE html> <html lang="en"> <head>    <meta charset="UTF-8">    <title>Principal Dashboard | SVCE</title> <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script> <style> body{font-family: Arial;background:#f7f7f7;margin:0;}
+header{background:#004d80;color:white;padding:15px;text-align:center;font-size:1.5rem;}
+.controls{background:white;max-width:950px;margin:20px auto;padding:15px;border-radius:8px;display:flex;gap:15px;justify-content:center;flex-wrap:wrap;}
+select,input{padding:8px;font-size:1rem;}
+.dept-block{background:white;margin:25px auto;padding:20px;max-width:950px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.1);}
+.row{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;}
+.info{flex:1 1 55%;}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{padding:8px;border:1px solid #ddd;text-align:center;}
+th{background:#004d80;color:white;}
+canvas{max-width:350px;height:350px !important;}
+.present-count{color:green;font-weight:bold;}
+.error{color:red;text-align:center;font-weight:bold;}
+</style> </head> <body> <header> SVCE Principal Attendance Review Dashboard
+</header> <div class="controls"> <label>    Date:    <input type="date" id="dateSelect">    </label> <label>    Session:    <select id="sessionSelect">    <option value="Morning">Morning</option>    <option value="Afternoon">Afternoon</option>    </select>    </label> <button onclick="loadDashboard()">Load Report</button> </div> <div id="content">Select date and session</div> <script> const SCRIPT_URL ="https://script.google.com/macros/s/AKfycbwnwn20CSLQrT55Kfyw_CoBM2PipoNMzbEPpVDocuMBF1zn81LLuEYNxuS0-X95XU5t/exec";
 const charts=[];
-document.addEventListener("DOMContentLoaded",()=>{  document.getElementById("dateSelect").value =    new Date().toISOString().split("T")[0];});
+document.addEventListener("DOMContentLoaded",()=>{document.getElementById("dateSelect").value =new Date().toISOString().split("T")[0];});
+/* ================= LOAD DASHBOARD ================= */
 async function loadDashboard(){
-  const container=document.getElementById("content");  const date=document.getElementById("dateSelect").value;  const session=document.getElementById("sessionSelect").value;
-  container.innerHTML="Loading dashboard...";
-  charts.forEach(c=>c.destroy());  charts.length=0;
-  try{
-    const res=await fetch(      `${SCRIPT_URL}?action=getPrincipalSummary&date=${date}&session=${session}`    );
-    const json=await res.json();
-    if(!json.success){      container.innerHTML=`<p class="error">${json.message}</p>`;      return;    }
-    const data=json.data;
-    if(!data || Object.keys(data).length===0){      container.innerHTML="<p class='error'>No attendance found</p>";      return;    }
-    container.innerHTML="";
-    const deptMap={};
-    Object.keys(data).forEach(k=>{      const [dept,year]=k.split("-");      if(!deptMap[dept]) deptMap[dept]={};      deptMap[dept][year]=data[k];    });
-    Object.keys(deptMap).forEach(dept=>{
-      const yearsData=deptMap[dept];
-      const block=document.createElement("div");      block.className="dept-block";      block.innerHTML=`<h2>${dept} Department (${session})</h2>`;
-      const labels=[],perc=[],years=[];      const totals=[],presents=[];      const boysP=[],girlsP=[];
-      Object.keys(yearsData).forEach(year=>{
-        const st=yearsData[year];
-        years.push(year);        labels.push(`${year} Year`);
-        totals.push(st.total);        presents.push(st.present);        boysP.push(st.boysPresent);        girlsP.push(st.girlsPresent);
-        perc.push(          st.total ? ((st.present/st.total)*100).toFixed(1) : 0        );
-      });
-      let table=`      <table>      <thead>      <tr>        <th>Year</th>        <th>Total Students</th>        <th>Present</th>        <th>Boys (P)</th>        <th>Girls (P)</th>        <th>%</th>      </tr>      </thead>      <tbody>      `;
-      labels.forEach((y,i)=>{        table+=`        <tr>          <td>${y}</td>          <td>${totals[i]}</td>          <td class="present-count">${presents[i]}</td>          <td>${boysP[i]}</td>          <td>${girlsP[i]}</td>          <td>${perc[i]}%</td>        </tr>`;      });
-      table+="</tbody></table>";
-      const row=document.createElement("div");      row.className="row";
-      const info=document.createElement("div");      info.className="info";      info.innerHTML=table;
-      const chartWrap=document.createElement("div");      const canvas=document.createElement("canvas");      chartWrap.appendChild(canvas);
-      row.appendChild(info);      row.appendChild(chartWrap);
-      block.appendChild(row);      container.appendChild(block);
-      const chart=new Chart(canvas,{        type:"pie",        data:{          labels:labels.map((l,i)=>`${l} (${perc[i]}%)`),          datasets:[{            data:perc,            backgroundColor:[              "#42a5f5","#66bb6a","#ffa726",              "#ef5350","#ab47bc","#29b6f6"            ]          }]        },        options:{          plugins:{            legend:{position:"bottom"},            datalabels:{              color:"#fff",              formatter:(v,ctx)=>`${years[ctx.dataIndex]} Year\n${v}%`,              font:{weight:"bold"}            }          }        },        plugins:[ChartDataLabels]      });
-      charts.push(chart);
-    });
-  }catch(err){    container.innerHTML=`<p class="error">${err.message}</p>`;  }}
-</script>
-</body></html>
+const container=document.getElementById("content");const date=document.getElementById("dateSelect").value;const session=document.getElementById("sessionSelect").value;
+container.innerHTML="Loading dashboard...";
+charts.forEach(c=>c.destroy());charts.length=0;
+try{
+const res=await fetch(      `${SCRIPT_URL}?action=getPrincipalSummary&date=${date}&session=${session}`    );    
+const json=await res.json();    
+if(!json.success){      container.innerHTML=`<p class="error">${json.message}</p>`;      return;    }    
+const data=json.data;    
+if(!data || Object.keys(data).length===0){      container.innerHTML="<p class='error'>No attendance found</p>";      return;    }    
+container.innerHTML="";    
+/* GROUP BY DEPARTMENT */    const deptMap={};    
+Object.keys(data).forEach(k=>{      const [dept,year]=k.split("-");      if(!deptMap[dept]) deptMap[dept]={};      deptMap[dept][year]=data[k];    });    
+
+/* BUILD UI */    Object.keys(deptMap).forEach(dept=>{    
+  const yearsData=deptMap[dept];    
+  const block=document.createElement("div");      block.className="dept-block";      block.innerHTML=`<h2>${dept} Department (${session})</h2>`;    
+  const labels=[],perc=[],years=[];      const totals=[],presents=[];      const boysP=[],girlsP=[];    
+  Object.keys(yearsData).forEach(year=>{    
+    const st=yearsData[year];    
+    years.push(year);        labels.push(`${year} Year`);    
+    totals.push(st.total);        presents.push(st.present);        boysP.push(st.boysPresent);        girlsP.push(st.girlsPresent);    
+    perc.push(          st.total ? ((st.present/st.total)*100).toFixed(1) : 0        );    
+  });    
+
+  /* TABLE */      let table=`      <table>      <thead>      <tr>        <th>Year</th>        <th>Total Students</th>        <th>Present</th>        <th>Boys (P)</th>        <th>Girls (P)</th>        <th>%</th>      </tr>      </thead>      <tbody>      `;    
+  labels.forEach((y,i)=>{        table+=`        <tr>          <td>${y}</td>          <td>${totals[i]}</td>          <td class="present-count">${presents[i]}</td>          <td>${boysP[i]}</td>          <td>${girlsP[i]}</td>          <td>${perc[i]}%</td>        </tr>`;      });    
+  table+="</tbody></table>";    
+
+  /* CREATE ROW */      const row=document.createElement("div");      row.className="row";    
+  const info=document.createElement("div");      info.className="info";      info.innerHTML=table;    
+  const chartWrap=document.createElement("div");      const canvas=document.createElement("canvas");      chartWrap.appendChild(canvas);    
+  row.appendChild(info);      row.appendChild(chartWrap);    
+  block.appendChild(row);      container.appendChild(block);    
+
+  /* PIE CHART */      const chart=new Chart(canvas,{        type:"pie",        data:{          labels:labels.map((l,i)=>`${l} (${perc[i]}%)`),          datasets:[{            data:perc,            backgroundColor:[              "#42a5f5","#66bb6a","#ffa726",              "#ef5350","#ab47bc","#29b6f6"            ]          }]        },        options:{          plugins:{            legend:{position:"bottom"},            datalabels:{              color:"#fff",              formatter:(v,ctx)=>`${years[ctx.dataIndex]} Year\n${v}%`,              font:{weight:"bold"}            }          }        },        plugins:[ChartDataLabels]      });    
+  charts.push(chart);    
+});
+}catch(err){container.innerHTML=<p class="error">${err.message}</p>;}}
+</script> </body>
+</html>  
